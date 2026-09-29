@@ -1,26 +1,264 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Active state of a project card: hovered or keyboard-focused. */
+@custom-variant card-on (&:where(.group:hover *, .group:focus-visible *, .group:focus-within *));
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   Every color, type family, surface and motion curve used on the
+   site is defined here. Components consume them as Tailwind
+   utilities (bg-ink, text-paper, font-display, ease-mech …) or as
+   CSS variables inside SVG (var(--color-signal)).
+   ───────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Graphite scale — backgrounds and dark surfaces */
+  --color-ink: #0b0c0c;
+  --color-graphite-900: #111313;
+  --color-graphite-800: #171a1a;
+  --color-graphite-700: #202424;
+  --color-graphite-600: #2c3131;
+  --color-graphite-500: #3b4141;
+
+  /* Steel — secondary text and linework on dark */
+  --color-steel-500: #6f7673;
+  --color-steel-400: #8d9490;
+  --color-steel-300: #aeb4b0;
+  --color-steel-200: #cdd1cd;
+
+  /* Technical paper — warm light surfaces */
+  --color-paper: #ebe8df;
+  --color-paper-100: #f3f1ea;
+  --color-paper-300: #dcd8cc;
+  --color-paper-ink: #191b1a;
+  --color-paper-muted: #5a5f5b;
+
+  /* Signal — the single engineering-green accent */
+  --color-signal: #62b487;
+  --color-signal-bright: #7fcca1;
+  --color-signal-deep: #2c7550;
+  --color-signal-wash: rgb(98 180 135 / 0.12);
+
+  /* Hairlines */
+  --color-line: rgb(235 232 223 / 0.1);
+  --color-line-strong: rgb(235 232 223 / 0.2);
+  --color-line-paper: rgb(25 27 26 / 0.14);
+
+  /* Type scale — display sizes are fluid */
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1rem;
+  --text-display-sm: clamp(2rem, 4vw, 3rem);
+  --text-display-sm--line-height: 1;
+  --text-display: clamp(2.75rem, 7vw, 6rem);
+  --text-display--line-height: 0.92;
+  --text-display-xl: clamp(3.25rem, 10.5vw, 9.5rem);
+  --text-display-xl--line-height: 0.86;
+
+  --tracking-label: 0.16em;
+
+  /* Motion — mirrored in lib/motion.js for JS animations */
+  --ease-mech: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out-precise: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --breakpoint-3xl: 112rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --section-y: clamp(6rem, 13vw, 11rem);
+  --header-h: 4rem;
+  --grid-minor: 24px;
+  --grid-major: 120px;
+  color-scheme: dark;
+}
+
+/* ─── Base ─────────────────────────────────────────────────── */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--header-h);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Utilities ────────────────────────────────────────────── */
+
+/* Mono uppercase annotation text used for labels, callouts, coordinates */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: var(--text-micro--line-height);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Expanded industrial display face */
+@utility display {
+  font-family: var(--font-display);
+  font-stretch: 118%;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+@utility container-x {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@utility section-y {
+  padding-block: var(--section-y);
+}
+
+/* Technical drafting grid (minor + major lines) */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-color-major, rgb(235 232 223 / 0.06)) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color-major, rgb(235 232 223 / 0.06)) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-color-minor, rgb(235 232 223 / 0.025)) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color-minor, rgb(235 232 223 / 0.025)) 1px, transparent 1px);
+  background-size:
+    var(--grid-major) var(--grid-major),
+    var(--grid-major) var(--grid-major),
+    var(--grid-minor) var(--grid-minor),
+    var(--grid-minor) var(--grid-minor);
+}
+
+@utility bg-grid-paper {
+  --grid-color-major: rgb(25 27 26 / 0.08);
+  --grid-color-minor: rgb(25 27 26 / 0.035);
+}
+
+/* Unfilled content slot — see lib/content.js isPlaceholder() */
+@utility placeholder-slot {
+  color: var(--slot-color, var(--color-steel-400));
+  font-style: italic;
+  text-decoration: underline dashed 1px;
+  text-decoration-color: var(--slot-line, rgb(98 180 135 / 0.55));
+  text-underline-offset: 0.3em;
+}
+
+/* ─── Hero intro gating ────────────────────────────────────────
+   An inline script sets html[data-intro="play"] before first paint
+   only when motion is allowed and the intro hasn't played this
+   session. Without JS, or with reduced motion, everything is
+   visible immediately.                                            */
+
+html[data-intro="play"] [data-intro-hide] {
+  opacity: 0;
+}
+
+[data-intro-hide] {
+  transition:
+    opacity 900ms var(--ease-out-precise),
+    transform 900ms var(--ease-out-precise);
+  transition-delay: var(--intro-delay, 0ms);
+}
+
+/* Hide the server-rendered final diagram until the sequence has mounted. */
+html[data-intro="play"] [data-intro-visual]:not([data-running]) {
+  visibility: hidden;
+}
+
+html[data-intro="play"] [data-intro-hide="rise"] {
+  transform: translateY(1.25rem);
+}
+
+/* Packets flowing along connectors in system diagrams */
+@keyframes flow {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+
+.flow-line {
+  stroke-dasharray: 2 18;
+  animation: flow 1.6s linear infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.caret {
+  animation: blink 1.1s steps(1) infinite;
+}
+
+/* ─── Reference imagery (see content/reference.js) ───────────────
+   Inverted into light linework on graphite, blended and edge-masked so
+   it reads as atmosphere, never as the subject.                        */
+
+.reference-backdrop {
+  filter: invert(1) grayscale(1) contrast(1.15);
+  mix-blend-mode: screen;
+  opacity: var(--reference-opacity, 0.11);
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 40%, transparent 100%);
+}
+
+/* During the hero intro the backdrop is swept in like a plotter pass. */
+@keyframes plot-sweep {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+html[data-intro="play"] .reference-sweep {
+  animation: plot-sweep 2.4s var(--ease-mech) 0.3s both;
 }
